@@ -1,0 +1,18 @@
+# 核心：用來跑 LLaVA + LoRA/QLoRA 的 toolkit
+ms-swift==3.10.1
+
+# PyTorch：你現在就是 2.9.1，如果要寫死可以這樣寫
+torch>=2.0.0
+
+# ---- 這四個是你特別要求寫進來的，版本跟 ms-swift 相容 ----
+transformers==4.57.1
+trl==0.24.0
+peft==0.13.2
+datasets==3.6.0
+
+# ---- 作業需要的 BLEU / 評估 ----
+evaluate>=0.4.0
+sacrebleu>=2.4.0
+
+# ---- swift 內部用到，之前有報缺少 ----
+msgspec>=0.18.6
