@@ -1,0 +1,10 @@
+What are the objects in the top-left and top-right of the shelf? 
+What film or television work is the theme of this scene?
+
+Model A:
+The objects in the top-left and top-right of the shelf are two figurines of princesses.
+The theme of this scene is inspired by the popular animated film \"Frozen.\" In the image, there are two dolls, one dressed as Elsa and the other as Anna, both standing on a bookshelf.
+
+Model B:
+Objects in the top corners: The top-left features a dark horse statue, and the top-right contains a metal helmet or piece of armor (possibly a suit of armor's headpiece).
+Theme of the scene: This scene is themed around the Disney animated film Frozen, featuring the young sisters, Elsa and Anna, as statues.
