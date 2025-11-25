@@ -1,0 +1,52 @@
+[
+  {
+    "image": "./photo/elsa.jpeg",
+    "question": "What are the objects in the top-left and top-right of the shelf?",
+    "answer": "The objects in the top-left and top-right of the shelf are two figurines of princesses."
+  },
+  {
+    "image": "./photo/elsa.jpeg",
+    "question": "What film or television work is the theme of this scene?",
+    "answer": "The theme of this scene is inspired by the popular animated film \"Frozen.\" In the image, there are two dolls, one dressed as Elsa and the other as Anna, both standing on a bookshelf. The presence of a boat and a horse also adds to the \"Frozen\" theme. The scene likely represents a fan's love for the movie or a creative display inspired by the characters and elements from the film."
+  },
+  {
+    "image": "./photo/gate.jpeg",
+    "question": "Where was this photo taken?",
+    "answer": "This photo was taken at a theme park, specifically at the entrance of a palace or a castle-like structure. The image features a group of people walking through the entrance, with some of them carrying umbrellas. The presence of the palace or castle-like structure and the entrance suggests that this is a popular tourist attraction."
+  },
+  {
+    "image": "./photo/gate.jpeg",
+    "question": "How is the weather in this photo?",
+    "answer": "The weather in this photo appears to be rainy, as there are several people holding umbrellas while walking around the area."
+  },
+  {
+    "image": "./photo/temple.jpeg",
+    "question": "What do you see in this photo?",
+    "answer": "The image features a large, ancient stone structure with a pyramid-like shape. The structure is surrounded by lush greenery, including trees and bushes. The scene also includes a few people scattered around the area, likely admiring the impressive architecture.\n\nIn addition to the main stone structure, there are two smaller structures nearby, one on the left side and the other on the right side of the image. The overall atmosphere of the scene is one of awe and appreciation for the historical and architectural significance of the ancient stone monument."
+  },
+  {
+    "image": "./photo/temple.jpeg",
+    "question": "Where are the possible locations of this photo?",
+    "answer": "The possible locations of this photo could be at a historical site, such as the Mayan ruins, or in a themed park with a mix of natural elements and man-made structures. The presence of a large stone structure, a fountain, and a clock tower suggests that the photo might have been taken in a location with a rich history or a well-designed environment. The combination of natural elements like trees and palm trees, along with the presence of people, indicates that this photo might have been taken in a place where visitors can explore and appreciate the architecture and surroundings."
+  },
+  {
+    "image": "./photo/plates.jpeg",
+    "question": "What is the most important feature in this store?",
+    "answer": "The most important feature in this store is the wide variety of colorful and decorative plates and bowls on display. The store offers a diverse selection of plates and bowls, which cater to different tastes and preferences. This variety, along with the vibrant colors and designs, makes the store an attractive destination for customers looking for unique and aesthetically pleasing tableware items."
+  },
+  {
+    "image": "./photo/plates.jpeg",
+    "question": "What kinds of tablewares are on the shelf?",
+    "answer": "The shelf is filled with a variety of tablewares, including colorful plates, bowls, and vases. These items are displayed in a visually appealing manner, showcasing the different designs and colors available. The diverse selection of tablewares suggests that the store offers a wide range of options for customers to choose from, catering to various tastes and preferences."
+  },
+  {
+    "image": "./photo/rainbow.jpeg",
+    "question": "What is the main object in this photo?",
+    "answer": "The main object in this photo is a rainbow."
+  },
+  {
+    "image": "./photo/rainbow.jpeg",
+    "question": "What do you see besides the main object?",
+    "answer": "In the image, besides the main object, which is a rainbow, there are several other elements. There is a large building with a clock tower, a boat, and a clock. Additionally, there are two umbrellas, one located towards the bottom right corner and the other at the top right corner. These elements create a diverse and interesting scene."
+  }
+]

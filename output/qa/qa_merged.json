@@ -1,0 +1,67 @@
+[
+  {
+    "image": "./photo/elsa.jpeg",
+    "question": "What are the objects in the top-left and top-right of the shelf?",
+    "answer": "books"
+  },
+  {
+    "image": "./photo/elsa.jpeg",
+    "question": "What film or television work is the theme of this scene?",
+    "answer": "frozen"
+  },
+  {
+    "image": "./photo/gate.jpeg",
+    "question": "Where was this photo taken?",
+    "answer": "disneyland"
+  },
+  {
+    "image": "./photo/gate.jpeg",
+    "question": "How is the weather in this photo?",
+    "answer": "rainy"
+  },
+  {
+    "image": "./photo/temple.jpeg",
+    "question": "What do you see in this photo?",
+    "answer": "a large stone structure with a staircase leading to the top"
+  },
+  {
+    "image": "./photo/temple.jpeg",
+    "question": "Where are the possible locations of this photo?",
+    "answer": "mexico city, mexico"
+  },
+  {
+    "image": "./photo/plates.jpeg",
+    "question": "What is the most important feature in this store?",
+    "answer": "variety"
+  },
+  {
+    "image": "./photo/plates.jpeg",
+    "question": "What kinds of tablewares are on the shelf?",
+    "answer": "plates and bowls"
+  },
+  {
+    "image": "./photo/rainbow.jpeg",
+    "question": "What is the main object in this photo?",
+    "answer": "rainbow"
+  },
+  {
+    "image": "./photo/rainbow.jpeg",
+    "question": "What do you see besides the main object?",
+    "answer": "umbrellas"
+  },
+  {
+    "image": "./photo/00046.jpg",
+    "question": "is there a verterbral fracture?",
+    "answer": "no"
+  },
+  {
+    "image": "./photo/00222.jpg",
+    "question": "what is the condition?",
+    "answer": "diverticuli"
+  },
+  {
+    "image": "./photo/00444.jpg",
+    "question": "what structure lies directly posterior to the appendix in this image?",
+    "answer": "the retroverticular ligament of the appendix"
+  }
+]
