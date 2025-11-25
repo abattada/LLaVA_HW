@@ -13,10 +13,14 @@ import torch
 # ===== 路徑設定 =====
 BASE_REMOTE_ID = "llava-hf/llava-1.5-7b-hf"
 BASE_LOCAL_DIR = "./output/llava-1.5-7b-base"
-FINETUNE_LOCAL_DIR = "./output/llava-vqarad-lora-swift/v4-20251123-225352"
+
+# 所有 finetune / merged 模型統一放在這個資料夾底下
+# 例如： ./output/llava-1.5-7b-finetune/v1
+#       ./output/llava-1.5-7b-finetune/v4-20251123-225352
+MERGED_LOCAL_DIR = "./output/merged"
 
 
-def ensure_base_model():
+def ensure_base_model() -> str:
     """確保 base 模型已經下載到 BASE_LOCAL_DIR，沒有就從遠端下載並儲存。"""
     base_dir = Path(BASE_LOCAL_DIR)
     config_path = base_dir / "config.json"
@@ -28,7 +32,6 @@ def ensure_base_model():
     print(f"[INFO] Local base model not found at {BASE_LOCAL_DIR}")
     print(f"[INFO] Downloading base model from: {BASE_REMOTE_ID}")
 
-    # 只在 CPU 上載入一次，然後存成 HF 格式
     model = LlavaForConditionalGeneration.from_pretrained(
         BASE_REMOTE_ID,
         torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
@@ -40,9 +43,7 @@ def ensure_base_model():
     model.save_pretrained(BASE_LOCAL_DIR)
     processor.save_pretrained(BASE_LOCAL_DIR)
 
-    # 釋放暫時載入的模型（避免佔記憶體）
-    del model
-    del processor
+    del model, processor
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
@@ -51,35 +52,36 @@ def ensure_base_model():
 
 def resolve_model_path(model_arg: str) -> str:
     """
-    將使用者輸入的 --model 轉成實際要給 PtEngine 的路徑 / 模型 ID。
-    - 'base'     -> 確保 ./output/llava-1.5-7b-base 存在，必要時自動下載
-    - 'finetune' -> 檢查 FINETUNE_LOCAL_DIR 存在，否則回報錯誤
-    - 其他       -> 原樣回傳（當成 hub id 或本地路徑）
+    將 --model 轉成實際 path：
+
+    - "base"         -> ./output/llava-1.5-7b-base（必要時自動下載）
+    - 其他字串       -> 只在 ./output/llava-1.5-7b-finetune/<model_arg> 底下找
+                       找不到就丟錯誤，不會再去 HF / ModelScope 下載。
     """
     if model_arg == "base":
         return ensure_base_model()
-
-    if model_arg == "finetune":
-        cfg_path = Path(FINETUNE_LOCAL_DIR) / "config.json"
-        if not cfg_path.exists():
+    elif model_arg == "merged":
+        # 特例：merged 代表直接用 MERGED_LOCAL_DIR
+        if Path(MERGED_LOCAL_DIR).is_dir():
+            print(f"[INFO] Using merged model at {MERGED_LOCAL_DIR}")
+            return str(Path(MERGED_LOCAL_DIR).resolve())
+        else:
             raise FileNotFoundError(
-                f"找不到 finetune 模型：{FINETUNE_LOCAL_DIR}\n"
-                "請先完成微調並把合併後的模型存到這個路徑，"
-                "或改用 --model base / --model <自訂模型路徑>。"
+                f"[ERROR] 找不到 merged 模型資料夾：{MERGED_LOCAL_DIR}\n"
+                f"請確認你是否已經把 merged 模型存到這個目錄下。"
             )
-        print(f"[INFO] Using finetuned model at {FINETUNE_LOCAL_DIR}")
-        return FINETUNE_LOCAL_DIR
-
-    # 其他情況一律當成已經是正確的 model id / 路徑
-    return model_arg
+    else:
+        raise AttributeError(
+            f"[ERROR] 參數不對\n"
+        )
 
 
 def build_engine(model_path: str, max_batch_size: int = 2):
     """
     建立 PtEngine 推理引擎
     model_path:
-        - 可以是 ModelScope / HF 的 model id
-        - 也可以是你本地的 checkpoint 目錄
+        - ./output/llava-1.5-7b-base
+        - ./output/llava-1.5-7b-finetune/<某個子資料夾>
     """
     print(f"[INFO] Loading model from: {model_path}")
     engine = PtEngine(
@@ -124,12 +126,9 @@ def parse_args():
         type=str,
         default="base",
         help=(
-            "模型 ID 或本地 checkpoint 路徑，或以下關鍵字：\n"
-            "  base     -> 使用 ./output/llava-1.5-7b-base，若不存在會自動下載 llava-hf/llava-1.5-7b-hf 並儲存\n"
-            "  finetune -> 使用 ./output/llava-vqarad-lora-swift/v4-20251123-225352，若不存在則報錯\n"
-            "也可以直接給：\n"
-            "  --model llava-hf/llava-1.5-7b-hf\n"
-            "  --model ./output/llava-vqarad-lora-swift/xxx"
+            "要使用的模型：\n"
+            "  base         -> ./output/llava-1.5-7b-base（必要時自動下載 HF base）\n"
+            "  merged       -> ./output/merged\n"
         ),
     )
 
@@ -146,43 +145,40 @@ def parse_args():
 def main():
     args = parse_args()
 
-    # 將 base / finetune 轉成實際路徑，並處理下載 / 檢查
+    # 把 base / 某個 finetune 名稱 轉成實際路徑，並處理下載 / 檢查
     try:
         resolved_model_path = resolve_model_path(args.model)
     except FileNotFoundError as e:
-        print(f"[ERROR] {e}")
+        print(e)
         return
 
-    # 建立引擎，可以選 base / finetuned checkpoint / 其他自訂模型
+    # 建立引擎，可以選 base / finetuned checkpoint
     engine, cfg = build_engine(resolved_model_path, max_batch_size=args.max_batch_size)
 
     # 這裡填你 N 張圖的位置 & 每張要問的問題
     image_qas = {
-        "/local/abat/LLaVA_HW/photo/cat.jpeg": [
-            "這張照片中的動物是什麼？有幾個？",
-            "這張照片可能是在哪裡拍的？",
+        "./photo/elsa.jpeg": [
+            "Where are the objects in the top-left and top-right of the shelf?",
+            "What film or television work is the theme of this scene?",
         ],
-        "/local/abat/LLaVA_HW/photo/elsa.jpeg": [
-            "這張照片的場景大概在哪裡？",
-            "你覺得這張照片的情緒是什麼？",
+        "./photo/gate.jpeg": [
+            "Where is the scene in this photo likely located?",
+            "How is the weather in this photo?",
         ],
-        "/local/abat/LLaVA_HW/photo/gate.jpeg": [
-            "這張照片的場景大概在哪裡？",
-            "照片中有哪些東西？",
+        "./photo/temple.jpeg": [
+            "What do you see in this photo?",
+            "What is the main emotion in this photo?",
         ],
-        "/local/abat/LLaVA_HW/photo/temple.jpeg": [
-            "這張照片大概是在做什麼活動？",
-            "如果要幫這張照片取一個標題，你會怎麼取？",
+        "./photo/plates.jpeg": [
+            "Where is the most important feature in this store?",
+            "What are the names of the tablewares on the shelf?",
         ],
-        "/local/abat/LLaVA_HW/photo/plates.jpeg": [
-            "照片中有哪些主要物體？",
-            "這張照片的場景大概在哪裡？",
-        ],
-        "/local/abat/LLaVA_HW/photo/rainbow.jpeg": [
-            "照片中主要在拍什麼？",
-            "這張照片的氛圍如何？",
+        "./photo/rainbow.jpeg": [
+            "What is the main object in this photo?",
+            "What do you see besides the main object?",
         ],
     }
+
 
     results = []
 
@@ -199,7 +195,8 @@ def main():
     out_dir = "output/qa"
     os.makedirs(out_dir, exist_ok=True)
 
-    out_path = os.path.join(out_dir, "qa_" , args.model, ".json")
+    # 存成一個跟 model 名稱綁在一起的檔案
+    out_path = os.path.join(out_dir, f"qa_{args.model}.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
 
