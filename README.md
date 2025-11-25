@@ -96,3 +96,13 @@ Theme of the scene: This scene is themed around the Disney animated film Frozen,
 
 ### 6.4 Prompt record
 Stored in ./prompts
+
+## 7. Utilities
+python check.py
+<pre>
+check the parameter numbers of base and merged model
+</pre>
+python get_version.py
+<pre>
+get the python, pytorch, CUDA information
+</pre>
