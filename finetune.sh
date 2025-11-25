@@ -1,6 +1,5 @@
 #!/bin/bash
-# 建議前面有 activate，不過你已經在對的 env 裡執行就沒差
-# conda activate /home/abat/conda_envs/swift
+
 #   --gradient_accumulation_steps 8 \
 python -m swift.cli.sft \
   --model_type llava1_5_hf \

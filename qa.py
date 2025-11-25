@@ -3,20 +3,14 @@ import argparse
 import json
 from pathlib import Path
 
-# 指定 GPU（看你環境需要，可以保留）
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from swift.llm import PtEngine, RequestConfig, InferRequest
 from transformers import AutoProcessor, LlavaForConditionalGeneration
 import torch
 
-# ===== 路徑設定 =====
 BASE_REMOTE_ID = "llava-hf/llava-1.5-7b-hf"
 BASE_LOCAL_DIR = "./output/llava-1.5-7b-base"
-
-# 所有 finetune / merged 模型統一放在這個資料夾底下
-# 例如： ./output/llava-1.5-7b-finetune/v1
-#       ./output/llava-1.5-7b-finetune/v4-20251123-225352
 MERGED_LOCAL_DIR = "./output/merged"
 
 
@@ -51,17 +45,10 @@ def ensure_base_model() -> str:
 
 
 def resolve_model_path(model_arg: str) -> str:
-    """
-    將 --model 轉成實際 path：
 
-    - "base"         -> ./output/llava-1.5-7b-base（必要時自動下載）
-    - 其他字串       -> 只在 ./output/llava-1.5-7b-finetune/<model_arg> 底下找
-                       找不到就丟錯誤，不會再去 HF / ModelScope 下載。
-    """
     if model_arg == "base":
         return ensure_base_model()
     elif model_arg == "merged":
-        # 特例：merged 代表直接用 MERGED_LOCAL_DIR
         if Path(MERGED_LOCAL_DIR).is_dir():
             print(f"[INFO] Using merged model at {MERGED_LOCAL_DIR}")
             return str(Path(MERGED_LOCAL_DIR).resolve())
@@ -81,7 +68,8 @@ def build_engine(model_path: str, max_batch_size: int = 2):
     建立 PtEngine 推理引擎
     model_path:
         - ./output/llava-1.5-7b-base
-        - ./output/llava-1.5-7b-finetune/<某個子資料夾>
+        - ./output/merged
+        - ./output/mllm
     """
     print(f"[INFO] Loading model from: {model_path}")
     engine = PtEngine(
@@ -91,8 +79,8 @@ def build_engine(model_path: str, max_batch_size: int = 2):
     )
 
     cfg = RequestConfig(
-        max_tokens=512,   # 回答長度上限
-        temperature=0.2,  # 隨機性
+        max_tokens=128,  
+        temperature=0.2,  
     )
     return engine, cfg
 
@@ -145,37 +133,43 @@ def parse_args():
 def main():
     args = parse_args()
 
-    # 把 base / 某個 finetune 名稱 轉成實際路徑，並處理下載 / 檢查
     try:
         resolved_model_path = resolve_model_path(args.model)
     except FileNotFoundError as e:
         print(e)
         return
 
-    # 建立引擎，可以選 base / finetuned checkpoint
     engine, cfg = build_engine(resolved_model_path, max_batch_size=args.max_batch_size)
 
-    # 這裡填你 N 張圖的位置 & 每張要問的問題
     image_qas = {
         "./photo/elsa.jpeg": [
-            "Where are the objects in the top-left and top-right of the shelf?",
+            "What are the objects in the top-left and top-right of the shelf?",
             "What film or television work is the theme of this scene?",
         ],
         "./photo/gate.jpeg": [
-            "Where is the scene in this photo likely located?",
+            "Where was this photo taken?",
             "How is the weather in this photo?",
         ],
         "./photo/temple.jpeg": [
             "What do you see in this photo?",
-            "What is the main emotion in this photo?",
+            "Where are the possible locations of this photo?",
         ],
         "./photo/plates.jpeg": [
-            "Where is the most important feature in this store?",
-            "What are the names of the tablewares on the shelf?",
+            "What is the most important feature in this store?",
+            "What kinds of tablewares are on the shelf?",
         ],
         "./photo/rainbow.jpeg": [
             "What is the main object in this photo?",
             "What do you see besides the main object?",
+        ],
+        "./data/images/test/00046.jpg": [
+            "is there a verterbral fracture?" #no
+        ],
+        "./data/images/test/00222.jpg": [
+            "what is the condition?" #diverticulitis
+        ],
+        "./data/images/test/00444.jpg": [
+            "what structure lies directly posterior to the appendix in this image?" #psoas muscle
         ],
     }
 
@@ -191,11 +185,9 @@ def main():
                 "answer": a,
             })
 
-    # 確保 output/qa 存在
     out_dir = "output/qa"
     os.makedirs(out_dir, exist_ok=True)
 
-    # 存成一個跟 model 名稱綁在一起的檔案
     out_path = os.path.join(out_dir, f"qa_{args.model}.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
